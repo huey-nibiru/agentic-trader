@@ -109,7 +109,8 @@ class _Handler(BaseHTTPRequestHandler):
             self._send(200, PAGE, "text/html; charset=utf-8")
             return
         if path == "/trades":
-            rows = list(reversed(read_trade_log()))
+            rows = read_trade_log()
+            rows.sort(key=lambda r: float(r.get("ts") or 0))
             self._send(200, json.dumps(rows), "application/json")
             return
         self._send(404, "not found", "text/plain; charset=utf-8")

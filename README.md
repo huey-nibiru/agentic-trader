@@ -1,8 +1,9 @@
-# Coin Scalp Bot
+# Scalp Bot
 
 For automatic new-pair discovery, using liquidity/volume/age as entry filters. Tiered take-profit of (2x/5x/10x). Hard stop-loss, trailing stop, no-new-high timer, volume-drop exit, and a stagnant-position time cap. {Not for aping}
 
 ## Files
+
 - `config.py` — every tunable parameter, including `MODE` (`PAPER`/`LIVE`)
 - `dexscreener.py` — market data + entry filter checks
 - `discovery.py` — continuously scans Dexscreener for new Solana pairs
@@ -12,6 +13,7 @@ For automatic new-pair discovery, using liquidity/volume/age as entry filters. T
 - `main.py` — ties discovery → approval → execution → position management together
 
 ## Setup
+
 ```bash
 pip install requests solders base58 websockets
 python main.py
@@ -22,10 +24,10 @@ and real Dexscreener maturity checks run, but fills are simulated and
 candidates auto-approve, so you can watch the whole pipeline end-to-end
 with zero funds at risk. Every trade (paper or live) logs to `trade_log.csv`.
 
-## Discovery: PumpPortal, not Dexscreener's boosted feed
+## Discovery: PumpPortal
 
-Dexscreener's `token-profiles`/`token-boosts` endpoints for discovery are 
-**paid marketing feeds** (tokens whose creators paid for visibility) which is a bad match 
+Dexscreener's `token-profiles`/`token-boosts` endpoints for discovery are
+**paid marketing feeds** (tokens whose creators paid for visibility) which is a bad match
 for liquidity-based filters: almost everything on them is a thin, freshly
 launched token by design. Discovery now **PumpPortal**
 (https://pumpportal.fun), a third-party websocket that
@@ -62,7 +64,7 @@ trust than Pump.fun's own infrastructure - noting it plainly.
    Raydium/PumpSwap.
 6. Start with a fraction of your intended bankroll, not all of it.
 
-## Why buys are gated but sells aren't
+## Buys are gated but sells aren't
 
 New, unvetted pairs are exactly where rugs and honeypots concentrate — a
 human glance at liquidity/chart/socials before capital commits is the best
@@ -73,11 +75,9 @@ knowingly entered, not deciding what to enter next.
 ## What this bot does NOT do
 
 - **Guarantee anything.** Every threshold in `config.py` is a starting
-  assumption based on the strategy we discussed, not a backtested,
-  validated edge. Meme coin markets are dominated by rugs, wash trading,
-  and adversarial bots with faster infrastructure than a basic script like
-  this one. Treat any capital run through this as capital you've already
-  decided you can lose completely.
+  assumption, currently being backtested and improved to validate edge. Markets are dominated by rugs, wash trading,
+  and advanced/faster bots. This readme will be updated as improvements are made. If you are backtesting on paper, cool. If you are live trading:
+  treat any capital running through this as capital you've already decided to lose completely.
 - **Protect you from yourself.** `DAILY_LOSS_LIMIT_USD` and
   `MAX_POSITION_USD` only work if you don't override them mid-session
   because a trade "feels right." Approving every candidate the bot shows
