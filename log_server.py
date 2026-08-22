@@ -5,11 +5,15 @@ Cursor will not live-reload a file tab. This serves a small page at
 http://127.0.0.1:<port>/ that polls trade_log.csv and redraws the table.
 """
 import json
+import os
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 from executor import read_trade_log
+from state import STATE_PATH
+
+MASCOT_PATH = "pnl_mascot.html"
 
 DISPLAY_FIELDS = [
     "ts_readable",
@@ -30,25 +34,50 @@ PAGE = """<!DOCTYPE html>
   <meta charset="utf-8">
   <title>trade log</title>
   <style>
-    body { margin: 16px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif;
-           background: #111; color: #eee; }
-    #status { color: #888; margin-bottom: 12px; }
+    html, body {
+      margin: 0; height: 100%;
+      background: #0B0E14; color: #E8ECF1;
+      font: 13px/1.4 "IBM Plex Mono", ui-monospace, Menlo, sans-serif;
+    }
+    .shell { display: flex; height: 100%; }
+    .mascot-col {
+      width: 364px; flex-shrink: 0;
+      border-right: 1px solid #1E2530;
+      background: #0B0E14;
+    }
+    .mascot-col iframe {
+      width: 100%; height: 100%; border: 0; display: block;
+    }
+    .log-col {
+      flex: 1; min-width: 0; overflow: auto;
+      padding: 16px 20px 24px;
+    }
+    #status { color: #6B7480; margin: 0 0 12px; }
     table { border-collapse: collapse; width: 100%; }
-    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #333;
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #1E2530;
              white-space: nowrap; }
-    th { position: sticky; top: 0; background: #111; }
+    th { position: sticky; top: 0; background: #0B0E14; color: #6B7480;
+         font-weight: 500; letter-spacing: .04em; font-size: 11px;
+         text-transform: uppercase; }
     tr.buy td { color: #fff; }
-    tr.sell.win td { color: #8fd19e; }
-    tr.sell.loss td { color: #f07178; }
+    tr.sell.win td { color: #26D07C; }
+    tr.sell.loss td { color: #F2554F; }
     td.reason { white-space: normal; max-width: 420px; }
   </style>
 </head>
 <body>
-  <p id="status">connecting…</p>
-  <table>
-    <thead><tr id="head"></tr></thead>
-    <tbody id="body"></tbody>
-  </table>
+  <div class="shell">
+    <aside class="mascot-col">
+      <iframe src="/mascot?embed=1" title="PnL mascot"></iframe>
+    </aside>
+    <main class="log-col">
+      <p id="status">connecting…</p>
+      <table>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </main>
+  </div>
   <script>
     const fields = FIELDS_JSON;
     const head = document.getElementById("head");
@@ -117,6 +146,21 @@ class _Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path in ("/", "/index.html", "/trade_log.html"):
             self._send(200, PAGE, "text/html; charset=utf-8")
+            return
+        if path in ("/mascot", "/pnl_mascot.html"):
+            if not os.path.exists(MASCOT_PATH):
+                self._send(404, "pnl_mascot.html not found", "text/plain; charset=utf-8")
+                return
+            with open(MASCOT_PATH, encoding="utf-8") as f:
+                self._send(200, f.read(), "text/html; charset=utf-8")
+            return
+        if path in ("/bot_state.json", "/state"):
+            if not os.path.exists(STATE_PATH):
+                self._send(404, json.dumps({"error": "bot_state.json not found"}),
+                           "application/json")
+                return
+            with open(STATE_PATH, encoding="utf-8") as f:
+                self._send(200, f.read(), "application/json")
             return
         if path == "/trades":
             rows = read_trade_log()

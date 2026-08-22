@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PnL Mascot — The Seal</title>
+<script>if (location.search.indexOf('embed') !== -1) document.documentElement.classList.add('embed');</script>
+<style>
+  :root{
+    --bg: #0B0E14;
+    --panel: #11151D;
+    --line: #1E2530;
+    --green: #26D07C;
+    --green-dim: #143323;
+    --red: #F2554F;
+    --red-dim: #33161A;
+    --amber: #F5A623;
+    --ink: #E8ECF1;
+    --ink-dim: #6B7480;
+    --mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --mood-color: var(--ink-dim);
+    --mood-dim: var(--panel);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:transparent;
+    font-family: var(--mono);
+    color: var(--ink);
+  }
+
+  .stage{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:24px;
+  }
+
+  .card{
+    width: 320px;
+    background: linear-gradient(180deg, var(--panel), #0D1119);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 22px 18px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+    transition: border-color .6s ease, box-shadow .6s ease;
+  }
+
+  .card::before{
+    content:"";
+    position:absolute; inset:0;
+    background: radial-gradient(140px 90px at 50% 8%, var(--mood-dim), transparent 70%);
+    opacity:.55;
+    pointer-events:none;
+    transition: background 1.2s ease;
+  }
+
+  .ticker-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom: 6px;
+    position:relative;
+    z-index:1;
+  }
+
+  .label{
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+
+  .status-dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--ink-dim);
+    display:inline-block;
+    margin-right:6px;
+    transition: background .4s ease;
+  }
+  .status-dot.live{ background: var(--mood-color); box-shadow: 0 0 8px var(--mood-color); }
+
+  #pnl-value{
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--mood-color);
+    transition: color .5s ease;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mascot-wrap{
+    position: relative;
+    z-index:1;
+    height: 178px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    margin: 6px 0 2px;
+  }
+
+  #mood-caption{
+    text-align:center;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: .04em;
+    min-height: 14px;
+    position:relative;
+    z-index:1;
+  }
+
+  /* ---- particles ---- */
+  .particle{
+    position:absolute;
+    font-size: 13px;
+    opacity:0;
+    pointer-events:none;
+    z-index:2;
+    color: var(--green);
+    font-weight:700;
+  }
+
+  @keyframes floatUp{
+    0%{ transform: translateY(0) scale(.6); opacity:0; }
+    15%{ opacity:.9; }
+    100%{ transform: translateY(-70px) scale(1); opacity:0; }
+  }
+  .particle.rise{ animation: floatUp 1.8s ease-out forwards; }
+
+  @keyframes dripDown{
+    0%{ transform: translateY(0); opacity:0; }
+    20%{ opacity:.8; }
+    100%{ transform: translateY(40px); opacity:0; }
+  }
+  .particle.drip{ animation: dripDown 1.6s ease-in forwards; color: #6FA8FF; font-weight:400; }
+
+  /* ---- mascot idle motion ---- */
+  #mascot{
+    transform-origin: 50% 95%;
+  }
+
+  .mood-up #mascot{ animation: bobHappy 1.5s ease-in-out infinite; }
+  @keyframes bobHappy{
+    0%,100%{ transform: translateY(0) rotate(-2deg); }
+    50%{ transform: translateY(-8px) rotate(2deg); }
+  }
+
+  .mood-down #mascot{ animation: breatheSad 3.6s ease-in-out infinite; }
+  @keyframes breatheSad{
+    0%,100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(4px) rotate(-0.8deg); }
+  }
+
+  .mood-flat #mascot{ animation: breatheFlat 3.8s ease-in-out infinite; }
+  @keyframes breatheFlat{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-2px); }
+  }
+
+  .mood-up #tail{ animation: wag .5s ease-in-out infinite; transform-origin: 108px 118px; }
+  @keyframes wag{
+    0%,100%{ transform: rotate(0deg); }
+    50%{ transform: rotate(14deg); }
+  }
+
+  #body-blob, #head, #flipper-l, #flipper-r, #tail{ transition: fill .5s ease; }
+  #eye-l, #eye-r, #brow-l, #brow-r, #mouth, #sweat, #sparkle-1, #sparkle-2, #shades, #blush-l, #blush-r, #whiskers{ transition: opacity .4s ease, d .4s ease, transform .4s ease; }
+
+  /* demo controls */
+  .demo{
+    margin-top: 16px;
+    display:flex;
+    gap:8px;
+    position:relative;
+    z-index:1;
+  }
+  .demo button{
+    flex:1;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding: 8px 6px;
+    border-radius: 7px;
+    cursor:pointer;
+    transition: all .2s ease;
+  }
+  .demo button:hover{ color: var(--ink); border-color: #333c4a; }
+  .demo button.active{ color: var(--bg); background: var(--mood-color); border-color: transparent; }
+
+  html.embed, html.embed body{ height:100%; }
+  html.embed .stage{ min-height:100%; padding:16px; }
+  html.embed .demo, html.embed .source-note{ display:none; }
+
+  .source-note{
+    margin-top:10px;
+    font-size: 9px;
+    color: #454e5c;
+    text-align:center;
+    letter-spacing:.03em;
+    position:relative; z-index:1;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="card" id="card">
+    <div class="ticker-row">
+      <div class="label"><span class="status-dot" id="status-dot"></span>realized pnl</div>
+      <div class="label" id="clock">--:--:--</div>
+    </div>
+    <div id="pnl-value">$0.00</div>
+
+    <div class="mascot-wrap" id="mascot-wrap">
+      <svg id="mascot" width="160" height="160" viewBox="0 0 160 160">
+        <!-- tail -->
+        <path id="tail" d="M108 118 q 20 -4 26 10 q -14 6 -26 -2 Z" fill="var(--ink-dim)"/>
+
+        <!-- body -->
+        <ellipse id="body-blob" cx="76" cy="112" rx="44" ry="32" fill="var(--ink-dim)"/>
+
+        <!-- flippers -->
+        <ellipse id="flipper-l" cx="42" cy="128" rx="16" ry="8" fill="var(--ink-dim)" transform="rotate(-18 42 128)"/>
+        <ellipse id="flipper-r" cx="98" cy="140" rx="16" ry="8" fill="var(--ink-dim)" transform="rotate(18 98 140)"/>
+
+        <!-- head -->
+        <circle id="head" cx="70" cy="70" r="38" fill="var(--ink-dim)"/>
+
+        <!-- sweat drop (sad only) -->
+        <path id="sweat" d="M104 48 C 108 54, 110 58, 104 62 C 98 58, 100 54, 104 48 Z" fill="#6FA8FF" opacity="0"/>
+
+        <!-- blush (happy only) -->
+        <ellipse id="blush-l" cx="46" cy="80" rx="7" ry="4" fill="var(--amber)" opacity="0"/>
+        <ellipse id="blush-r" cx="94" cy="80" rx="7" ry="4" fill="var(--amber)" opacity="0"/>
+
+        <!-- whiskers -->
+        <g id="whiskers" stroke="#0B0E14" stroke-width="2" stroke-linecap="round" opacity=".55">
+          <path d="M40 78 q -16 -3 -24 2"/>
+          <path d="M40 84 q -16 3 -22 8"/>
+          <path d="M100 78 q 16 -3 24 2"/>
+          <path d="M100 84 q 16 3 22 8"/>
+        </g>
+
+        <!-- eyebrows -->
+        <path id="brow-l" d="M48 54 q 8 -6 16 0" stroke="#0B0E14" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path id="brow-r" d="M76 54 q 8 -6 16 0" stroke="#0B0E14" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+        <!-- eyes -->
+        <circle id="eye-l" cx="56" cy="68" r="6.5" fill="#0B0E14"/>
+        <circle id="eye-r" cx="84" cy="68" r="6.5" fill="#0B0E14"/>
+
+        <!-- sunglasses (happy only) -->
+        <g id="shades" opacity="0">
+          <rect x="44" y="61" width="24" height="15" rx="6" fill="#0B0E14"/>
+          <rect x="72" y="61" width="24" height="15" rx="6" fill="#0B0E14"/>
+          <rect x="68" y="66" width="4" height="4" fill="#0B0E14"/>
+        </g>
+
+        <!-- nose + mouth -->
+        <ellipse cx="70" cy="82" rx="4" ry="3" fill="#0B0E14"/>
+        <path id="mouth" d="M56 90 Q 70 90 84 90" stroke="#0B0E14" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+        <!-- sparkles (happy only) -->
+        <path id="sparkle-1" d="M22 44 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--amber)" opacity="0"/>
+        <path id="sparkle-2" d="M124 96 l2.5 5.5 5.5 2.5 -5.5 2.5 -2.5 5.5 -2.5 -5.5 -5.5 -2.5 5.5 -2.5z" fill="var(--amber)" opacity="0"/>
+      </svg>
+    </div>
+
+    <div id="mood-caption">waiting for bot_state.json…</div>
+
+    <div class="demo">
+      <button id="btn-live" class="active">live file</button>
+      <button id="btn-up">demo +</button>
+      <button id="btn-down">demo −</button>
+    </div>
+    <div class="source-note" id="source-note">polling ./bot_state.json every 5s</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STATE_URL = './bot_state.json';
+  const POLL_MS = 5000;
+
+  const card = document.getElementById('card');
+  const pnlValueEl = document.getElementById('pnl-value');
+  const captionEl = document.getElementById('mood-caption');
+  const statusDot = document.getElementById('status-dot');
+  const clockEl = document.getElementById('clock');
+  const sourceNote = document.getElementById('source-note');
+  const btnLive = document.getElementById('btn-live');
+  const btnUp = document.getElementById('btn-up');
+  const btnDown = document.getElementById('btn-down');
+  const mascotWrap = document.getElementById('mascot-wrap');
+
+  const shades = document.getElementById('shades');
+  const sweat = document.getElementById('sweat');
+  const sparkle1 = document.getElementById('sparkle-1');
+  const sparkle2 = document.getElementById('sparkle-2');
+  const blushL = document.getElementById('blush-l');
+  const blushR = document.getElementById('blush-r');
+  const browL = document.getElementById('brow-l');
+  const browR = document.getElementById('brow-r');
+  const eyeL = document.getElementById('eye-l');
+  const eyeR = document.getElementById('eye-r');
+  const mouth = document.getElementById('mouth');
+  const bodyBlob = document.getElementById('body-blob');
+  const head = document.getElementById('head');
+  const flipperL = document.getElementById('flipper-l');
+  const flipperR = document.getElementById('flipper-r');
+  const tail = document.getElementById('tail');
+
+  let mode = 'live';       // 'live' | 'demo-up' | 'demo-down'
+  let pollTimer = null;
+  let currentMood = null;  // 'up' | 'down' | 'flat'
+  let lastGoodValue = null;
+
+  function fmtUsd(n){
+    const sign = n < 0 ? '-' : '+';
+    const v = Math.abs(n).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+    return (n === 0 ? '' : sign) + '$' + v;
+  }
+
+  function setClock(){
+    const d = new Date();
+    clockEl.textContent = d.toTimeString().slice(0,8);
+  }
+  setInterval(setClock, 1000); setClock();
+
+  function spawnParticle(kind){
+    const p = document.createElement('div');
+    p.className = 'particle ' + (kind === 'up' ? 'rise' : 'drip');
+    p.textContent = kind === 'up' ? (Math.random() > .5 ? '$' : '▲') : '·';
+    const x = 30 + Math.random() * 100;
+    const y = kind === 'up' ? 50 + Math.random()*20 : 10;
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    mascotWrap.appendChild(p);
+    setTimeout(() => p.remove(), 1900);
+  }
+
+  let particleTimer = null;
+  function setParticleLoop(kind){
+    if (particleTimer) clearInterval(particleTimer);
+    if (kind === 'flat') return;
+    particleTimer = setInterval(() => spawnParticle(kind), kind === 'up' ? 700 : 1400);
+  }
+
+  function setFills(color){
+    bodyBlob.setAttribute('fill', color);
+    head.setAttribute('fill', color);
+    flipperL.setAttribute('fill', color);
+    flipperR.setAttribute('fill', color);
+    tail.setAttribute('fill', color);
+  }
+
+  function applyMood(newMood, value){
+    if (newMood === currentMood && value === lastGoodValue) return;
+    currentMood = newMood;
+    lastGoodValue = value;
+
+    card.classList.remove('mood-up','mood-down','mood-flat');
+    card.classList.add('mood-' + newMood);
+
+    if (newMood === 'up'){
+      card.style.setProperty('--mood-color', 'var(--green)');
+      card.style.setProperty('--mood-dim', 'var(--green-dim)');
+      setFills('var(--green)');
+      browL.setAttribute('d', 'M48 50 q 8 -3 16 2');
+      browR.setAttribute('d', 'M76 52 q 8 -3 16 -2');
+      mouth.setAttribute('d', 'M54 86 Q 70 100 88 84');
+      eyeL.style.opacity = 0; eyeR.style.opacity = 0;
+      shades.style.opacity = 1;
+      sweat.style.opacity = 0;
+      sparkle1.style.opacity = 1; sparkle2.style.opacity = 1;
+      blushL.style.opacity = 1; blushR.style.opacity = 1;
+      captionEl.textContent = 'feeling pretty smug about this';
+      setParticleLoop('up');
+    } else if (newMood === 'down'){
+      card.style.setProperty('--mood-color', 'var(--red)');
+      card.style.setProperty('--mood-dim', 'var(--red-dim)');
+      setFills('var(--red)');
+      browL.setAttribute('d', 'M48 58 q 8 6 16 2');
+      browR.setAttribute('d', 'M76 60 q 8 -2 16 -6');
+      mouth.setAttribute('d', 'M56 94 Q 70 84 84 94');
+      eyeL.style.opacity = 1; eyeR.style.opacity = 1;
+      eyeL.setAttribute('cy', '70'); eyeR.setAttribute('cy', '70');
+      eyeL.setAttribute('r', '4.5'); eyeR.setAttribute('r', '4.5');
+      shades.style.opacity = 0;
+      sweat.style.opacity = 1;
+      sparkle1.style.opacity = 0; sparkle2.style.opacity = 0;
+      blushL.style.opacity = 0; blushR.style.opacity = 0;
+      captionEl.textContent = 'running on fumes, needs a nap';
+      setParticleLoop('down');
+    } else {
+      card.style.setProperty('--mood-color', 'var(--ink-dim)');
+      card.style.setProperty('--mood-dim', 'var(--panel)');
+      setFills('var(--ink-dim)');
+      browL.setAttribute('d', 'M48 54 q 8 -6 16 0');
+      browR.setAttribute('d', 'M76 54 q 8 -6 16 0');
+      mouth.setAttribute('d', 'M56 90 Q 70 90 84 90');
+      eyeL.style.opacity = 1; eyeR.style.opacity = 1;
+      eyeL.setAttribute('cy', '68'); eyeR.setAttribute('cy', '68');
+      eyeL.setAttribute('r', '6.5'); eyeR.setAttribute('r', '6.5');
+      shades.style.opacity = 0;
+      sweat.style.opacity = 0;
+      sparkle1.style.opacity = 0; sparkle2.style.opacity = 0;
+      blushL.style.opacity = 0; blushR.style.opacity = 0;
+      captionEl.textContent = 'flat — nothing realized yet';
+      setParticleLoop('flat');
+    }
+
+    pnlValueEl.textContent = fmtUsd(value);
+  }
+
+  function moodFor(value){
+    if (value > 0) return 'up';
+    if (value < 0) return 'down';
+    return 'flat';
+  }
+
+  async function pollLive(){
+    try{
+      const res = await fetch(STATE_URL + '?t=' + Date.now(), {cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const val = Number(data.realized_pnl_usd);
+      if (Number.isNaN(val)) throw new Error('realized_pnl_usd missing/NaN');
+      statusDot.classList.add('live');
+      applyMood(moodFor(val), val);
+    }catch(err){
+      statusDot.classList.remove('live');
+      captionEl.textContent = 'can\'t reach bot_state.json (' + err.message + ')';
+    }
+  }
+
+  function startLive(){
+    mode = 'live';
+    sourceNote.textContent = 'polling ' + STATE_URL + ' every ' + (POLL_MS/1000) + 's';
+    btnLive.classList.add('active'); btnUp.classList.remove('active'); btnDown.classList.remove('active');
+    if (pollTimer) clearInterval(pollTimer);
+    pollLive();
+    pollTimer = setInterval(pollLive, POLL_MS);
+  }
+
+  function startDemo(kind){
+    mode = 'demo-' + kind;
+    if (pollTimer) clearInterval(pollTimer);
+    statusDot.classList.remove('live');
+    sourceNote.textContent = 'demo mode — not reading a real file';
+    btnLive.classList.remove('active');
+    btnUp.classList.toggle('active', kind === 'up');
+    btnDown.classList.toggle('active', kind === 'down');
+    const val = kind === 'up' ? 128.40 : -63.15;
+    applyMood(moodFor(val), val);
+  }
+
+  btnLive.addEventListener('click', startLive);
+  btnUp.addEventListener('click', () => startDemo('up'));
+  btnDown.addEventListener('click', () => startDemo('down'));
+
+  // boot into flat state, then try live polling
+  applyMood('flat', 0);
+  startLive();
+})();
+</script>
+
+</body>
+</html>
