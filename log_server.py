@@ -37,8 +37,9 @@ PAGE = """<!DOCTYPE html>
     th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #333;
              white-space: nowrap; }
     th { position: sticky; top: 0; background: #111; }
-    tr.buy td { color: #8fd19e; }
-    tr.sell td { color: #f0b7b7; }
+    tr.buy td { color: #fff; }
+    tr.sell.win td { color: #8fd19e; }
+    tr.sell.loss td { color: #f07178; }
     td.reason { white-space: normal; max-width: 420px; }
   </style>
 </head>

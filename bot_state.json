@@ -1,29 +1,6 @@
 {
   "session_date": "2026-08-22",
-  "realized_pnl_usd": -3.617813309606678,
-  "paper_balance_usd": 121.38218669039333,
-  "open_positions": [
-    {
-      "pair_address": "3WjFcLSMrms6UQg6WLGZ1RikbDGAMHPojey6jrhTU3t4",
-      "symbol": "RST",
-      "mint": "3YWG9wh5LdfCc1JoxmeWvkgaCXfWb9RvXJSUTpr6pump",
-      "entry_price": 0.05233,
-      "entry_time": 1787377703.185521,
-      "size_tokens": 477.7374355054462,
-      "original_size_tokens": 477.7374355054462,
-      "peak_price": 0.05233,
-      "last_new_high_time": 1787377703.185521,
-      "tp_ladder_hit": [],
-      "volume_history": [
-        57075.264,
-        57075.264,
-        57075.264,
-        57075.264
-      ],
-      "liquidity_usd": 587654.49,
-      "volume_5m": 285376.32,
-      "buy_sell_ratio": 7.68,
-      "pair_age_seconds": 96.2
-    }
-  ]
+  "realized_pnl_usd": -1.2077379237121413,
+  "paper_balance_usd": 148.79226207628787,
+  "open_positions": []
 }
