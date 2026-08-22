@@ -82,7 +82,7 @@ knowingly entered, not deciding what to enter next.
   assumption, currently being backtested and improved to validate edge. Markets are dominated by rugs, wash trading,
   and advanced/faster bots. This readme will be updated as improvements are made. If you are backtesting on paper, cool. If you are live trading:
   treat any capital running through this as capital you've already decided to lose completely.
-- **Protect you from yourself.** `DAILY_LOSS_LIMIT_USD` and
+- **Protect you from yourself.** `DAILY_LOSS_LIMIT_PCT` and
   `MAX_POSITION_USD` only work if you don't override them mid-session
   because a trade "feels right." Approving every candidate the bot shows
   you defeats the point of the approval step.

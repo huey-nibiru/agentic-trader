@@ -63,6 +63,22 @@ def build_approval():
     return ConsoleApproval(timeout_seconds=60)
 
 
+def paper_balance_usd(executor):
+    cash = getattr(executor, "balance_usd", None)
+    if cash is not None:
+        return float(cash)
+    return None
+
+
+def daily_loss_floor_usd() -> float:
+    return config.TOTAL_BANKROLL_USD * config.DAILY_LOSS_LIMIT_PCT
+
+
+def hit_daily_loss_limit(executor) -> bool:
+    cash = paper_balance_usd(executor)
+    return cash is not None and cash <= daily_loss_floor_usd()
+
+
 def main():
     os.environ["PREVIEW_SIZE"] = str(config.MAX_POSITION_USD)
 
@@ -97,6 +113,17 @@ def main():
               f"{len(open_positions)} open ({held}) | "
               f"realized PnL ${realized_pnl_usd:.2f}{cash_bit}", flush=True)
 
+    if hit_daily_loss_limit(executor):
+        cash = paper_balance_usd(executor)
+        floor = daily_loss_floor_usd()
+        print(
+            f"[STOP] paper_balance_usd ${cash:.2f} is at or below "
+            f"{config.DAILY_LOSS_LIMIT_PCT:.0%} of bankroll "
+            f"(${floor:.2f}). Halting.",
+            flush=True,
+        )
+        raise SystemExit(1)
+
     def persist():
         save_state(
             open_positions,
@@ -110,7 +137,17 @@ def main():
     print("[main] PumpPortal discovery running in background, entering management loop...\n", flush=True)
 
     while True:
-        if realized_pnl_usd <= -config.DAILY_LOSS_LIMIT_USD:
+        cash = paper_balance_usd(executor)
+        floor = daily_loss_floor_usd()
+        if hit_daily_loss_limit(executor):
+            print(
+                f"[STOP] paper_balance_usd ${cash:.2f} is at or below "
+                f"{config.DAILY_LOSS_LIMIT_PCT:.0%} of bankroll "
+                f"(${floor:.2f}). Halting.",
+                flush=True,
+            )
+            break
+        if realized_pnl_usd <= -(config.TOTAL_BANKROLL_USD - floor):
             print(f"[STOP] Daily loss limit hit (${realized_pnl_usd:.2f}). Halting.")
             break
 
