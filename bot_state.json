@@ -1,29 +1,6 @@
 {
   "session_date": "2026-08-22",
-  "realized_pnl_usd": -59.43336088481255,
-  "paper_balance_usd": 65.56663911518746,
-  "open_positions": [
-    {
-      "pair_address": "AebQCxxmnNF8Kdpn6aq3smNAMtwHHKQPgLjKg3gj7KPd",
-      "symbol": "LEGO",
-      "mint": "B5DdxW5zQ5ik9TgdaLELczgx7oUrVjbMZ1KYFoUpump",
-      "entry_price": 0.0004402,
-      "entry_time": 1787387739.146111,
-      "size_tokens": 56792.36710586097,
-      "original_size_tokens": 56792.36710586097,
-      "peak_price": 0.0004557,
-      "last_new_high_time": 1787387883.5781918,
-      "tp_ladder_hit": [],
-      "volume_history": [
-        3933.0480000000002,
-        3933.0480000000002,
-        3933.0480000000002,
-        3933.8559999999998
-      ],
-      "liquidity_usd": 52141.36,
-      "volume_5m": 19127.74,
-      "buy_sell_ratio": 44.2,
-      "pair_age_seconds": 106.1
-    }
-  ]
+  "realized_pnl_usd": -56.32681840412195,
+  "paper_balance_usd": 93.67318159587805,
+  "open_positions": []
 }

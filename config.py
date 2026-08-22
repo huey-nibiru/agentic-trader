@@ -22,7 +22,7 @@ RPC_URL = "https://api.mainnet-beta.solana.com"  # consider a paid RPC (Helius, 
 TOTAL_BANKROLL_USD = 150.0
 MAX_POSITION_USD = 25.0          # ~17% of bankroll - more offensive; one rug still survivable
 MAX_CONCURRENT_POSITIONS = 10     # more tickets in flight so a runner can appear
-DAILY_LOSS_LIMIT_PCT = 0.30      # halt if paper_balance_usd falls to this fraction of bankroll or below
+DAILY_LOSS_LIMIT_PCT = 0.70      # halt if paper_balance_usd falls to this fraction of bankroll or below
 DAILY_LOSS_LIMIT_USD = TOTAL_BANKROLL_USD * DAILY_LOSS_LIMIT_PCT
 
 # ============ ENTRY FILTERS ============
