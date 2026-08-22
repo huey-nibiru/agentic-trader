@@ -23,6 +23,7 @@ import time
 import base64
 import datetime
 import subprocess
+import threading
 import requests
 
 JUPITER_QUOTE_URL = "https://quote-api.jup.ag/v6/quote"
@@ -51,10 +52,12 @@ LOG_FIELDS = [
     "pair_age_seconds",
 ]
 
+_log_lock = threading.Lock()
+
 # macOS system sounds — played in the background so fills never wait on audio.
-_SOUND_BUY = "/System/Library/Sounds/Tink.aiff"
-_SOUND_WIN = "/System/Library/Sounds/Glass.aiff"
-_SOUND_LOSS = "/System/Library/Sounds/Basso.aiff"
+_SOUND_BUY = "/System/Library/Sounds/Glass.aiff"
+_SOUND_WIN = "/System/Library/Sounds/Blow.aiff"
+_SOUND_LOSS = "/System/Library/Sounds/Bottle.aiff"
 
 
 def _play_alert(path: str):
@@ -164,17 +167,30 @@ def _refresh_trade_states(rows: list) -> list:
     return rows
 
 
+def read_trade_log() -> list:
+    """Snapshot of trade_log.csv for the live viewer."""
+    with _log_lock:
+        if not os.path.exists(LOG_PATH) or os.path.getsize(LOG_PATH) == 0:
+            return []
+        with open(LOG_PATH, newline="") as f:
+            reader = csv.DictReader(f)
+            if not reader.fieldnames:
+                return []
+            return list(reader)
+
+
 def _rewrite_log(rows: list):
     rows = _refresh_trade_states(_backfill_pnl(rows))
-    tmp = LOG_PATH + ".tmp"
-    with open(tmp, "w", newline="") as f:
-        writer = csv.DictWriter(
-            f, fieldnames=LOG_FIELDS, extrasaction="ignore", restval=""
-        )
-        writer.writeheader()
-        for old in rows:
-            writer.writerow(old)
-    os.replace(tmp, LOG_PATH)
+    with _log_lock:
+        with open(LOG_PATH, "w", newline="") as f:
+            writer = csv.DictWriter(
+                f, fieldnames=LOG_FIELDS, extrasaction="ignore", restval=""
+            )
+            writer.writeheader()
+            for old in rows:
+                writer.writerow(old)
+            f.flush()
+            os.fsync(f.fileno())
 
 
 def _log_trade(row: dict):
@@ -189,12 +205,7 @@ def _log_trade(row: dict):
     if not row.get("state"):
         row["state"] = "open" if row.get("side") == "BUY" else "closed"
 
-    existing_rows = []
-    if os.path.exists(LOG_PATH) and os.path.getsize(LOG_PATH) > 0:
-        with open(LOG_PATH, newline="") as f:
-            reader = csv.DictReader(f)
-            if reader.fieldnames:
-                existing_rows = list(reader)
+    existing_rows = read_trade_log()
     existing_rows.append(row)
     _rewrite_log(existing_rows)
     _alert_for_fill(row)

@@ -80,7 +80,7 @@ class PumpPortalDiscovery:
                                   f"- watching, total pending: {len(self.pending)}")
             except Exception as e:
                 print(f"[pumpportal] websocket error: {e} - reconnecting in 5s")
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
 
     def start_background_listener(self):
         """Runs the websocket listener forever in a dedicated thread."""

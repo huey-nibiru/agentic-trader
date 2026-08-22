@@ -31,6 +31,7 @@ from strategy import Position, evaluate
 from executor import PaperExecutor
 from approval import ConsoleApproval
 from state import load_state, save_state, recover_from_trade_log
+from log_server import start_log_server
 
 
 class AutoApproval:
@@ -75,6 +76,7 @@ def main():
     approval = build_approval()
 
     scanner.start_background_listener()
+    start_log_server(port=getattr(config, "LOG_VIEWER_PORT", 8765))
 
     open_positions: dict[str, Position] = {}
     realized_pnl_usd = 0.0
