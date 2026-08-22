@@ -61,14 +61,23 @@ PAGE = """<!DOCTYPE html>
       return "<td" + cls + ">" + String(value ?? "") + "</td>";
     }
 
+    function rowClass(row) {
+      const side = String(row.side || "").toLowerCase();
+      if (side === "buy") return "buy";
+      if (side !== "sell") return side;
+      const pnl = Number(row.pnl);
+      if (pnl > 0) return "sell win";
+      if (pnl < 0) return "sell loss";
+      return "sell";
+    }
+
     async function refresh() {
       try {
         const r = await fetch("/trades?t=" + Date.now(), { cache: "no-store" });
         if (!r.ok) throw new Error("HTTP " + r.status);
         const rows = await r.json();
         body.innerHTML = rows.map(row => {
-          const side = String(row.side || "").toLowerCase();
-          return "<tr class=\\"" + side + "\\">" +
+          return "<tr class=\\"" + rowClass(row) + "\\">" +
             fields.map(f => cell(f, row[f])).join("") + "</tr>";
         }).join("");
         const now = new Date().toLocaleTimeString();
