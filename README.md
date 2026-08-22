@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="pnl_seal.gif" alt="PnL seal" />
+</p>
+
 # Scalp Bot
 
 For automatic new-pair discovery, using liquidity/volume/age as entry filters. Tiered take-profit of (2x/5x/10x). Hard stop-loss, trailing stop, no-new-high timer, volume-drop exit, and a stagnant-position time cap. {Not for aping}
